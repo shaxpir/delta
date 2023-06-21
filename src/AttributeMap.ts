@@ -1,8 +1,22 @@
-import cloneDeep = require('lodash.clonedeep');
-import isEqual = require('lodash.isequal');
+import rfdc = require('rfdc');
+import isEqual = require('fast-deep-equal');
+const cloneDeep = rfdc();
 
 interface AttributeMap {
   [key: string]: unknown;
+}
+
+function isObject(value: unknown): value is AttributeMap {
+  return value === Object(value) && !Array.isArray(value);
+}
+
+function isDeepNull(value: unknown): boolean {
+  if (value == null) return true;
+  if (!isObject(value)) return false;
+  for (const key in value) {
+    if (!isDeepNull(value[key])) return false;
+  }
+  return true;
 }
 
 namespace AttributeMap {
@@ -18,9 +32,16 @@ namespace AttributeMap {
       b = {};
     }
     let attributes = cloneDeep(b);
+    for (const key in a) {
+      const aValue = a[key];
+      const attrValue = attributes[key];
+      if (isObject(aValue) && isObject(attrValue)) {
+        attributes[key] = compose(aValue, attrValue, keepNull);
+      }
+    }
     if (!keepNull) {
       attributes = Object.keys(attributes).reduce<AttributeMap>((copy, key) => {
-        if (attributes[key] != null) {
+        if (!isDeepNull(attributes[key])) {
           copy[key] = attributes[key];
         }
         return copy;
@@ -49,6 +70,15 @@ namespace AttributeMap {
       .reduce<AttributeMap>((attrs, key) => {
         if (!isEqual(a[key], b[key])) {
           attrs[key] = b[key] === undefined ? null : b[key];
+          const aValue = a[key];
+          const bValue = b[key];
+          if (b[key] === undefined) {
+            attrs[key] = null;
+          } else if (isObject(aValue) && isObject(bValue)) {
+            attrs[key] = diff(aValue, bValue);
+          } else {
+            attrs[key] = bValue;
+          }
         }
         return attrs;
       }, {});
@@ -61,8 +91,14 @@ namespace AttributeMap {
   ): AttributeMap {
     attr = attr || {};
     const baseInverted = Object.keys(base).reduce<AttributeMap>((memo, key) => {
-      if (base[key] !== attr[key] && attr[key] !== undefined) {
-        memo[key] = base[key];
+      const attrValue = attr[key];
+      const baseValue = base[key];
+      if (!isEqual(baseValue, attrValue) && attrValue !== undefined) {
+        if (isObject(attrValue) && isObject(baseValue)) {
+          memo[key] = invert(attrValue, baseValue);
+        } else {
+          memo[key] = base[key];
+        }
       }
       return memo;
     }, {});
@@ -89,8 +125,12 @@ namespace AttributeMap {
       return b; // b simply overwrites us without priority
     }
     const attributes = Object.keys(b).reduce<AttributeMap>((attrs, key) => {
-      if (a[key] === undefined) {
-        attrs[key] = b[key]; // null is a valid value
+      const aValue = a[key];
+      const bValue = b[key];
+      if (aValue === undefined) {
+        attrs[key] = bValue; // null is a valid value
+      } else if (isObject(aValue) && isObject(bValue)) {
+        attrs[key] = transform(aValue, bValue, true);
       }
       return attrs;
     }, {});

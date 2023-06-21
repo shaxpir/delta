@@ -1,5 +1,22 @@
 # Delta [![Build Status](https://github.com/quilljs/delta/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/quilljs/delta/actions?query=branch%3Amaster) [![Coverage Status](https://img.shields.io/coveralls/quilljs/delta.svg)](https://coveralls.io/r/quilljs/delta)
 
+## Shaxpir: Why fork
+
+This fork is based on the excellent work in the [Reedsy Fork](https://github.com/reedsy/delta) of the same repo.
+
+The reason we're not forking-the-fork, but rather building our own fork is that at Shaxpir we have slightly different needs.
+
+We don't need to attach arbitrary metadata to Delta docs (because we already embed those Delta docs into deeply-nested
+`Json1` objects representing books, chapters, etc, which have their own metadata) so we don't need to use the same
+[DeltaWithMetadata](https://github.com/ottypes/rich-text/commit/9bd0cc43d0ccad9e415f06c7045b7f41e71b41a8)
+objects as Reedsy uses.
+
+But we do need support for [Complex Attributes](https://github.com/quilljs/delta/commit/88174ddac8f1b78bf7d67c7afc3c5b0962c0184d).
+We were previously handling these complex attributes at the application layer in our Blot definitions, but the Reedsy approach
+for handling these attributes directly in the Delta format is much nicer, so we're adopting it too.
+
+## Introduction
+
 Deltas are a simple, yet expressive format that can be used to describe contents and changes. The format is JSON based, and is human readable, yet easily parsible by machines. Deltas can describe any rich text document, includes all text and formatting information, without the ambiguity and complexity of HTML.
 
 A Delta is made up of an [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) of Operations, which describe changes to a document. They can be an [`insert`](#insert-operation), [`delete`](#delete-operation) or [`retain`](#retain-operation). Note operations do not take an index. They always describe the change at the current index. Use retains to "keep" or "skip" certain parts of the document.
