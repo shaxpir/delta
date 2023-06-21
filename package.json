@@ -1,6 +1,6 @@
 {
-  "name": "quill-delta",
-  "version": "5.1.0",
+  "name": "@shaxpir/quill-delta",
+  "version": "6.0.0",
   "description": "Format for representing rich text documents and changes.",
   "author": "Jason Chen <jhchen7@gmail.com>",
   "homepage": "https://github.com/quilljs/delta",
@@ -63,9 +63,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/quilljs/delta"
-  },
-  "bugs": {
+    "url": "git://github.com/shaxpir/delta.git"
     "url": "https://github.com/quilljs/delta/issues"
   },
   "keywords": [
