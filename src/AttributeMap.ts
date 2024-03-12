@@ -10,23 +10,17 @@ function isObject(value: unknown): value is AttributeMap {
   return value === Object(value) && !Array.isArray(value);
 }
 
-function isDeepNull(value: unknown): boolean {
-  if (value == null) return true;
-  if (!isObject(value)) return false;
-  for (const key in value) {
-    if (!isDeepNull(value[key])) return false;
-  }
-  return true;
+function isEmptyObject(value: unknown): value is AttributeMap {
+  return isObject(value) && !Object.keys(value).length;
 }
 
-function removeNull<T>(value: T): T {
-  if (!value || !isObject(value)) return value;
+function removeNullOrEmptyObjects<T>(value: T): void {
+  if (!value || !isObject(value)) return;
   for (const key in value) {
     const k = key as keyof typeof value;
-    if (value[k] == null) delete value[k];
-    else removeNull(value[k]);
+    removeNullOrEmptyObjects(value[k]);
+    if (value[k] == null || isEmptyObject(value[k])) delete value[k];
   }
-  return value;
 }
 
 namespace AttributeMap {
@@ -41,7 +35,7 @@ namespace AttributeMap {
     if (typeof b !== 'object') {
       b = {};
     }
-    let attributes = cloneDeep(b);
+    const attributes = cloneDeep(b);
     for (const key in a) {
       const aValue = a[key];
       const attrValue = attributes[key];
@@ -49,14 +43,7 @@ namespace AttributeMap {
         attributes[key] = compose(aValue, attrValue, keepNull);
       }
     }
-    if (!keepNull) {
-      attributes = Object.keys(attributes).reduce<AttributeMap>((copy, key) => {
-        if (!isDeepNull(attributes[key])) {
-          copy[key] = removeNull(attributes[key]);
-        }
-        return copy;
-      }, {});
-    }
+    if (!keepNull) removeNullOrEmptyObjects(attributes);
     for (const key in a) {
       if (a[key] !== undefined && b[key] === undefined) {
         attributes[key] = a[key];

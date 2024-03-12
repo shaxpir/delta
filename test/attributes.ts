@@ -65,7 +65,7 @@ describe('AttributeMap', () => {
           },
         });
       });
-  
+
       it('overwrite an existing property', function () {
         expect(
           AttributeMap.compose(
@@ -76,7 +76,7 @@ describe('AttributeMap', () => {
           complex: { foo: 456 },
         });
       });
-  
+
       it('remove an existing property', function () {
         expect(
           AttributeMap.compose(
@@ -87,7 +87,7 @@ describe('AttributeMap', () => {
           complex: { bar: 456 },
         });
       });
-  
+
       it('remove the last property', function () {
         expect(
           AttributeMap.compose(
@@ -96,7 +96,7 @@ describe('AttributeMap', () => {
           ),
         ).toBeUndefined();
       });
-  
+
       it('overwrites arrays', function () {
         expect(
           AttributeMap.compose(
@@ -105,7 +105,7 @@ describe('AttributeMap', () => {
           ),
         ).toEqual({ complex: { foo: [1, 3] } });
       });
-  
+
       it('ignores null leaves on new attributes', function () {
         expect(
           AttributeMap.compose(undefined, {
@@ -113,7 +113,7 @@ describe('AttributeMap', () => {
           }),
         ).toBeUndefined();
       });
-  
+
       it('deep mix of operations', function () {
         expect(
           AttributeMap.compose(
@@ -145,47 +145,194 @@ describe('AttributeMap', () => {
         });
       });
 
-      it('composing objects with deep null and keepNull=false', function () {
-        expect(
-          AttributeMap.compose(
-            {
-              complex: {
-                foo: {
-                  bar: null,
+      describe('keepNull=false', function () {
+        it('composing objects with deep null', function () {
+          expect(
+            AttributeMap.compose(
+              {
+                complex: {
+                  foo: {
+                    bar: null,
+                  },
                 },
               },
-            },
-            {
-              complex: {
-                foo: {
-                  baz: 123,
+              {
+                complex: {
+                  foo: {
+                    baz: 123,
+                  },
                 },
               },
+              false,
+            ),
+          ).toEqual({
+            complex: {
+              foo: {
+                baz: 123,
+              },
             },
-            false,
-          ),
-        ).toEqual({
-          complex: {
-            foo: {
-              baz: 123,
+          });
+        });
+
+        it('composing arrays with deep null', function () {
+          expect(
+            AttributeMap.compose(
+              {
+                complex: [1, 2, 3],
+              },
+              {
+                complex: [null],
+              },
+              false,
+            ),
+          ).toEqual({
+            complex: [null],
+          });
+        });
+
+        it('composing object with a deep empty object', function () {
+          expect(
+            AttributeMap.compose(
+              {},
+              {
+                complex: {
+                  foo: {},
+                  bar: 123,
+                },
+              },
+              false,
+            ),
+          ).toEqual({
+            complex: {
+              bar: 123,
             },
-          },
+          });
+        });
+
+        it('composing object whose only deep value is null', function () {
+          expect(
+            AttributeMap.compose(
+              {
+                complex: {
+                  foo: {
+                    bar: null,
+                  },
+                },
+              },
+              {
+                complex: {
+                  baz: {
+                    qux: 123,
+                  },
+                },
+              },
+              false,
+            ),
+          ).toEqual({
+            complex: {
+              baz: {
+                qux: 123,
+              },
+            },
+          });
         });
       });
 
-      it('composing arrays with deep null and keepNull=false', function () {
-        expect(
-          AttributeMap.compose(
-            {
-              complex: [1, 2, 3],
+      describe('keepNull=true', function () {
+        it('composing objects with deep null', function () {
+          expect(
+            AttributeMap.compose(
+              {
+                complex: {
+                  foo: {
+                    bar: null,
+                  },
+                },
+              },
+              {
+                complex: {
+                  foo: {
+                    baz: 123,
+                  },
+                },
+              },
+              true,
+            ),
+          ).toEqual({
+            complex: {
+              foo: {
+                bar: null,
+                baz: 123,
+              },
             },
-            {
-              complex: [null],
+          });
+        });
+
+        it('composing arrays with deep null', function () {
+          expect(
+            AttributeMap.compose(
+              {
+                complex: [1, 2, 3],
+              },
+              {
+                complex: [null],
+              },
+              true,
+            ),
+          ).toEqual({
+            complex: [null],
+          });
+        });
+
+        it('composing object with a deep empty object', function () {
+          expect(
+            AttributeMap.compose(
+              {},
+              {
+                complex: {
+                  foo: {},
+                  bar: 123,
+                },
+              },
+              true,
+            ),
+          ).toEqual({
+            complex: {
+              foo: {},
+              bar: 123,
             },
-            false,
-          ),
-        ).toEqual({
-          complex: [null],
+          });
+        });
+
+        it('composing object whose only deep value is null', function () {
+          expect(
+            AttributeMap.compose(
+              {
+                complex: {
+                  foo: {
+                    bar: null,
+                  },
+                },
+              },
+              {
+                complex: {
+                  baz: {
+                    qux: 123,
+                  },
+                },
+              },
+              true,
+            ),
+          ).toEqual({
+            complex: {
+              foo: {
+                bar: null,
+              },
+              baz: {
+                qux: 123,
+              },
+            },
+          });
         });
       });
     });
