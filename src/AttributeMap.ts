@@ -19,6 +19,16 @@ function isDeepNull(value: unknown): boolean {
   return true;
 }
 
+function removeNull<T>(value: T): T {
+  if (!value || !isObject(value)) return value;
+  for (const key in value) {
+    const k = key as keyof typeof value;
+    if (value[k] == null) delete value[k];
+    else removeNull(value[k]);
+  }
+  return value;
+}
+
 namespace AttributeMap {
   export function compose(
     a: AttributeMap = {},
@@ -42,7 +52,7 @@ namespace AttributeMap {
     if (!keepNull) {
       attributes = Object.keys(attributes).reduce<AttributeMap>((copy, key) => {
         if (!isDeepNull(attributes[key])) {
-          copy[key] = attributes[key];
+          copy[key] = removeNull(attributes[key]);
         }
         return copy;
       }, {});

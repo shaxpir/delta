@@ -144,6 +144,50 @@ describe('AttributeMap', () => {
           },
         });
       });
+
+      it('composing objects with deep null and keepNull=false', function () {
+        expect(
+          AttributeMap.compose(
+            {
+              complex: {
+                foo: {
+                  bar: null,
+                },
+              },
+            },
+            {
+              complex: {
+                foo: {
+                  baz: 123,
+                },
+              },
+            },
+            false,
+          ),
+        ).toEqual({
+          complex: {
+            foo: {
+              baz: 123,
+            },
+          },
+        });
+      });
+
+      it('composing arrays with deep null and keepNull=false', function () {
+        expect(
+          AttributeMap.compose(
+            {
+              complex: [1, 2, 3],
+            },
+            {
+              complex: [null],
+            },
+            false,
+          ),
+        ).toEqual({
+          complex: [null],
+        });
+      });
     });
   });
 
@@ -306,37 +350,37 @@ describe('AttributeMap', () => {
 
     describe('complex attribute', function () {
       it('add property', function () {
-        var attributes = { complex: { bar: 456 } };
-        var base = { complex: { foo: 123 } };
-        var expected = { complex: { bar: null } };
+        const attributes = { complex: { bar: 456 } };
+        const base = { complex: { foo: 123 } };
+        const expected = { complex: { bar: null } };
         expect(AttributeMap.invert(attributes, base)).toEqual(expected);
       });
 
       it('remove property', function () {
-        var attributes = { complex: { bar: null } };
-        var base = { complex: { foo: 123, bar: 456 } };
-        var expected = { complex: { bar: 456 } };
+        const attributes = { complex: { bar: null } };
+        const base = { complex: { foo: 123, bar: 456 } };
+        const expected = { complex: { bar: 456 } };
         expect(AttributeMap.invert(attributes, base)).toEqual(expected);
       });
 
       it('update existing property', function () {
-        var attributes = { complex: { foo: 789 } };
-        var base = { complex: { foo: 123, bar: 456 } };
-        var expected = { complex: { foo: 123 } };
+        const attributes = { complex: { foo: 789 } };
+        const base = { complex: { foo: 123, bar: 456 } };
+        const expected = { complex: { foo: 123 } };
         expect(AttributeMap.invert(attributes, base)).toEqual(expected);
       });
 
       it('array', function () {
-        var attributes = { complex: { foo: [1, 3] } };
-        var base = { complex: { foo: [1, 2, 3] } };
-        var expected = { complex: { foo: [1, 2, 3] } };
+        const attributes = { complex: { foo: [1, 3] } };
+        const base = { complex: { foo: [1, 2, 3] } };
+        const expected = { complex: { foo: [1, 2, 3] } };
         expect(AttributeMap.invert(attributes, base)).toEqual(expected);
       });
 
       it('deep change', function () {
-        var attributes = { complex: { foo: { bar: null } } };
-        var base = { complex: { foo: { bar: 123, baz: 456 } } };
-        var expected = { complex: { foo: { bar: 123 } } };
+        const attributes = { complex: { foo: { bar: null } } };
+        const base = { complex: { foo: { bar: 123, baz: 456 } } };
+        const expected = { complex: { foo: { bar: 123 } } };
         expect(AttributeMap.invert(attributes, base)).toEqual(expected);
       });
     });
